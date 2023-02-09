@@ -29,7 +29,7 @@ function App() {
   async function newContract() {
     const beneficiary = document.getElementById('beneficiary').value;
     const arbiter = document.getElementById('arbiter').value;
-    const value = ethers.BigNumber.from(document.getElementById('wei').value);
+    const value = ethers.BigNumber.from(document.getElementById('amount').value);
     const escrowContract = await deploy(signer, arbiter, beneficiary, value);
 
 
@@ -53,36 +53,38 @@ function App() {
     setEscrows([...escrows, escrow]);
   }
 
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+    newContract();
+  }
+
   return (
     <>
       <div className="contract">
-        <h1> New Contract </h1>
-        <label>
-          Arbiter Address
-          <input type="text" id="arbiter" />
-        </label>
+        <form onSubmit={handleSubmit}>
+          <h1> New Contract </h1>
+          <label>
+            Arbiter Address
+            <input type="text" id="arbiter" value="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" />
+          </label>
 
-        <label>
-          Beneficiary Address
-          <input type="text" id="beneficiary" />
-        </label>
+          <label>
+            Beneficiary Address
+            <input type="text" id="beneficiary" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" />
+          </label>
 
-        <label>
-          Deposit Amount (in Wei)
-          <input type="text" id="wei" />
-        </label>
+          <label>
+            Deposit Amount (in Wei)
+            <input type="text" id="amount" />
+          </label>
 
-        <div
-          className="button"
-          id="deploy"
-          onClick={(e) => {
-            e.preventDefault();
-
-            newContract();
-          }}
-        >
-          Deploy
-        </div>
+          <button
+            className="button"
+            id="deploy"
+          >
+            Deploy
+          </button>
+        </form>
       </div>
 
       <div className="existing-contracts">

@@ -2,6 +2,7 @@ body {
   background-color: #eee;
   display: flex;
   font-family: 'Muli', sans-serif;
+  font-size: 16px;
 }
 
 .contract, .existing-contracts {
@@ -23,23 +24,33 @@ label {
   flex-direction: column;
   text-transform: uppercase;
   color: #aaa;
-  margin: 20px;
+  margin: 1rem 0;
 }
 
-input[type="text"] {
-  padding: 6px;
-  font-size: 18px;
+button, input {
+  background-color: #fff;
+  border: 1px solid #0002;
+  border-radius: 6px;
+  box-shadow: 0px 0px 6px 0px #0001;
+  color: #000;
+  transition: transform 100ms ease-out;
+  padding: .6rem 1rem;
+  margin: 1rem .3rem;
+}
+button:focus, input:focus {
+  outline: none;
+  transform: scale(1.05);
+  box-shadow: 0px 0px 6px 3px #0001;
+}
+button:active, input:active {
+  transform: scale(0.95);
+  box-shadow: 0px 0px 0px 0px #0001;
 }
 
 .button {
-  background-color: #f58427;
-  color: white;
   text-align: center;
   font-weight: bold;
   text-transform: uppercase;
-  margin: 20px;
-  padding: 9px 25px;
-  font-size: 14px;
   letter-spacing: 1px;
   cursor: pointer;
 }
