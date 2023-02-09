@@ -61,7 +61,7 @@ function App() {
 
   return (
     <>
-      <div className="contract">
+      <section>
         <form onSubmit={handleSubmit}>
           <h1> New Contract </h1>
           <label>
@@ -79,16 +79,13 @@ function App() {
             <input type="text" id="amount" />
           </label>
 
-          <button
-            className="button"
-            id="deploy"
-          >
+          <button>
             Deploy
           </button>
         </form>
-      </div>
+      </section>
 
-      <div className="existing-contracts">
+      <section>
         <h1> Existing Contracts </h1>
 
         <div id="container">
@@ -96,7 +93,7 @@ function App() {
             return <Escrow key={escrow.address} {...escrow} />;
           })}
         </div>
-      </div>
+      </section>
     </>
   );
 }

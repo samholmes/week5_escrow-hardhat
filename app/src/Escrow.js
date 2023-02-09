@@ -6,7 +6,7 @@ export default function Escrow({
   handleApprove,
 }) {
   return (
-    <div className="existing-contract">
+    <div className="existingContracts">
       <ul className="fields">
         <li>
           <div> Arbiter </div>
@@ -20,8 +20,7 @@ export default function Escrow({
           <div> Value </div>
           <div> {value} </div>
         </li>
-        <div
-          className="button"
+        <button
           id={address}
           onClick={(e) => {
             e.preventDefault();
@@ -30,7 +29,7 @@ export default function Escrow({
           }}
         >
           Approve
-        </div>
+        </button>
       </ul>
     </div>
   );
