@@ -137,12 +137,12 @@ function App() {
           <h1> New Contract </h1>
           <label>
             Arbiter Address
-            <input type="text" id="arbiter" value="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" />
+            <input type="text" id="arbiter" />
           </label>
 
           <label>
             Beneficiary Address
-            <input type="text" id="beneficiary" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" />
+            <input type="text" id="beneficiary" />
           </label>
 
           <label>
