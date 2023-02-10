@@ -18,14 +18,19 @@ function App() {
   }, [factoryContractAddress, signer])
 
   useEffect(() => {
-    async function getAccounts() {
-      const accounts = await provider.send('eth_requestAccounts', []);
-
-      setAccount(accounts[0]);
-      setSigner(provider.getSigner());
+    const handler = (accounts) => {
+      setAccount(accounts[0])
     }
+    window.ethereum.on('accountsChanged', handler)
+    provider.send('eth_requestAccounts', []).then(handler)
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handler)
+    }
+  }, []);
 
-    getAccounts();
+  useEffect(() => {
+    console.log(account)
+    setSigner(provider.getSigner())
   }, [account]);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ function App() {
           const beneficiary = await escrowContract.beneficiary()
           const depositor = await escrowContract.depositor()
           const isApproved = await escrowContract.isApproved()
-          const value = (await provider.getBalance(address))
+          const funding = await escrowContract.funding()
           
           const escrow = {
             address,
@@ -54,7 +59,7 @@ function App() {
             beneficiary,
             depositor,
             isApproved,
-            value: ethers.utils.formatUnits(value, 'ether'),
+            funding: ethers.utils.formatUnits(funding, 'ether'),
             handleApprove: async () => {
               escrowContract.on('Approved', () => {
                 setEscrows(escrows => {
@@ -161,7 +166,7 @@ function App() {
         <div id="container">
           {escrows.length === 0 ? <p>No Escrow Contracts in Affect.</p> : null}
           {escrows.map((escrow) => {
-            return <Escrow key={escrow.address} {...escrow} />;
+            return <Escrow key={escrow.address} escrow={escrow} account={account} />;
           })}
         </div>
       </section>

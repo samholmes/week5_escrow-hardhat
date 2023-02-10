@@ -1,11 +1,16 @@
-export default function Escrow({
-  address,
-  arbiter,
-  beneficiary,
-  value,
-  isApproved,
-  handleApprove,
-}) {
+export default function Escrow(props) {
+  const { escrow, account } = props
+  const {
+    address,
+    arbiter,
+    beneficiary,
+    funding,
+    isApproved,
+    handleApprove,
+  } = escrow
+  const canApprove = account.toLowerCase() === arbiter.toLowerCase()
+
+
   return (
     <div className="existingContracts">
       <ul className="fields">
@@ -18,9 +23,10 @@ export default function Escrow({
           <div> {beneficiary} </div>
         </li>
         <li>
-          <div> Value </div>
-          <div> {value} </div>
+          <div> Funding </div>
+          <div> {funding} </div>
         </li>
+        {!canApprove && !isApproved ? null :
           <button
             id={address}
             onClick={(e) => {
@@ -32,6 +38,7 @@ export default function Escrow({
           >
             {isApproved ? "✓ It's been approved!" : 'Approve'}
           </button>
+        }
       </ul>
     </div>
   );

@@ -5,6 +5,7 @@ contract Escrow {
     address public arbiter;
     address public beneficiary;
     address public depositor;
+    uint256 public funding;
 
     bool public isApproved;
 
@@ -12,6 +13,7 @@ contract Escrow {
         arbiter = _arbiter;
         beneficiary = _beneficiary;
         depositor = msg.sender;
+        funding = msg.value;
     }
 
     event Approved(uint256);
