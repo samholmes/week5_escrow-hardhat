@@ -9,13 +9,13 @@ contract EscrowFactory {
 
     event Made(address newAddress, uint256 index);
 
-    function makeEscrow(address _arbiter, address _beneficiary)
+    function makeEscrow(uint256 _arbiterCount, address _beneficiary)
         external
         payable
         returns (address)
     {
         Escrow escrow = new Escrow{value: address(this).balance}(
-            _arbiter,
+            _arbiterCount,
             _beneficiary
         );
         address newAddress_ = address(escrow);

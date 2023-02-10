@@ -114,24 +114,24 @@ input:disabled:active {
 }
 
 
-.existingContracts ul {
+.existingContracts .fields {
   padding: 10px;
   margin: 20px;
   border-radius: 6px;
   background-color: #00000008;
 }
 
-.existingContracts ul > li {
-  list-style: none;
+.existingContracts .fields > .field {
   display: flex;
   margin: 10px;
+  flex-direction: column;
 }
 
-.existingContracts ul > li > div {
-  margin: 0 5px;
+.existingContracts .fields > .field > * {
+  margin: 0;
 }
 
-.existingContracts ul > li > :first-child {
+.existingContracts .fields > .field > label {
   font-weight: bold;
 }
 

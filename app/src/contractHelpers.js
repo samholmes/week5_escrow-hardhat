@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import EscrowFactory from './artifacts/contracts/EscrowFactory.sol/EscrowFactory';
 import Escrow from './artifacts/contracts/Escrow.sol/Escrow';
 
-export async function deployEscrow(signer, arbiter, beneficiary, value) {
+export async function deployEscrowContract(signer, arbiter, beneficiary, value) {
   const factory = new ethers.ContractFactory(
     Escrow.abi,
     Escrow.bytecode,
@@ -11,11 +11,11 @@ export async function deployEscrow(signer, arbiter, beneficiary, value) {
   return await factory.deploy(arbiter, beneficiary, { value });
 }
 
-export function getEscrow(signer, address) {
+export function getEscrowContract(signer, address) {
   return new ethers.Contract(address, Escrow.abi, signer)
 }
 
-export async function deployFactory(signer) {
+export async function deployFactoryContract(signer) {
   const factory = new ethers.ContractFactory(
     EscrowFactory.abi,
     EscrowFactory.bytecode,
@@ -24,6 +24,6 @@ export async function deployFactory(signer) {
   return await factory.deploy();
 }
 
-export function getFactory(signer, address) {
+export function getFactoryContract(signer, address) {
   return new ethers.Contract(address, EscrowFactory.abi, signer)
 }

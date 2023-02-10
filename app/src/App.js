@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { useEffect, useMemo, useState } from 'react';
-import { getEscrow, deployFactory, getFactory } from './contractHelpers';
+import { getEscrowContract, deployFactoryContract, getFactoryContract } from './contractHelpers';
 import Escrow from './Escrow';
 import { useHandler } from './hooks/useHandler';
 
@@ -14,7 +14,7 @@ function App() {
   const [signer, setSigner] = useState();
 
   const factoryContract = useMemo(() => {
-    return factoryContractAddress ? getFactory(signer, factoryContractAddress) : null
+    return factoryContractAddress ? getFactoryContract(signer, factoryContractAddress) : null
   }, [factoryContractAddress, signer])
 
   useEffect(() => {
@@ -29,7 +29,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log(account)
     setSigner(provider.getSigner())
   }, [account]);
 
@@ -41,47 +40,95 @@ function App() {
     effect()
   }, [factoryContract])
 
-  const getEscrows = useHandler(async () => {
-      const escrows = []
-      try {
-        for (let i = 0; i < contractCount; ++i) {
-          const address = await factoryContract.addresses(i)
-          const escrowContract = getEscrow(signer, address)
-          const arbiter = await escrowContract.arbiter()
-          const beneficiary = await escrowContract.beneficiary()
-          const depositor = await escrowContract.depositor()
-          const isApproved = await escrowContract.isApproved()
-          const funding = await escrowContract.funding()
-          
-          const escrow = {
-            address,
-            arbiter,
-            beneficiary,
-            depositor,
-            isApproved,
-            funding: ethers.utils.formatUnits(funding, 'ether'),
-            handleApprove: async () => {
-              escrowContract.on('Approved', () => {
-                setEscrows(escrows => {
-                  return escrows.map(escrow => {
-                    if (escrow.address === address) {
-                      return {...escrow, isApproved: true }
-                    }
-                    return escrow
-                  })
-                })
-              });
+  const getEscrow = useHandler(async (address) => {
+    const escrowContract = getEscrowContract(signer, address)
+    const quorum = (await escrowContract.quorum()).toNumber()
+    const arbiters = []
+    for (let i = 0; i < quorum; ++i) {
+      const arbiterAddress = await escrowContract.arbiterAddresses(i).catch(_ => null);
+      const arbiter = await escrowContract.arbiters(arbiterAddress).catch(_ => null);
+      // arbiters
+      if (arbiterAddress != null)
+        arbiters.push({
+          address: arbiterAddress,
+          voted: arbiter.voted
+        });
+    }
+    const beneficiary = await escrowContract.beneficiary()
+    const depositor = await escrowContract.depositor()
+    const isSettled = await escrowContract.isSettled()
+    const funding = await escrowContract.funding()
 
-              const approveTxn = await escrowContract.connect(signer).approve();
-              await approveTxn.wait();
-            },
-          };
-          escrows.push(escrow)
-        }
-      } catch (error) {
-        console.error(error)
+    escrowContract.on('Settled', () => {
+      setEscrows(escrows => {
+        return escrows.map(escrow => {
+          if (escrow.address === address) {
+            return {...escrow, isSettled: true }
+          }
+          return escrow
+        })
+      })
+    });
+    escrowContract.on('Retracted', () => {
+      setEscrows(escrows => {
+        return escrows.map(escrow => {
+          if (escrow.address === address) {
+            return {...escrow, isSettled: true }
+          }
+          return escrow
+        })
+      })
+    });
+
+    const updateEscrow = async () => {
+      const newEscrow = await getEscrow(address)
+      setEscrows(escrows => {
+        return escrows.map(escrow => {
+          if (escrow.address === newEscrow.address) {
+            return newEscrow
+          }
+          return escrow
+        })
+      })
+    }
+    
+    return {
+      address,
+      arbiters,
+      beneficiary,
+      depositor,
+      isSettled,
+      funding: ethers.utils.formatUnits(funding, 'ether'),
+      quorum,
+      onArbitrate: async () => {
+        const approveTxn = await escrowContract.connect(signer).arbitrate();
+        await approveTxn.wait();
+        await updateEscrow()
+      },
+      onApprove: async () => {
+        const approveTxn = await escrowContract.connect(signer).approve();
+        await approveTxn.wait();
+        await updateEscrow()
+      },
+      onDisapprove: async () => {
+        const approveTxn = await escrowContract.connect(signer).disapprove();
+        await approveTxn.wait();
+        await updateEscrow()
+      },
+    };
+  })
+  const getEscrows = useHandler(async () => {
+    const escrows = []
+    try {
+      for (let i = 0; i < contractCount; ++i) {
+        const address = await factoryContract.addresses(i)
+        const escrow = await getEscrow(address)
+        escrows.push(escrow)
       }
-      return escrows
+    } catch (error) {
+      console.error(error)
+    }
+    return escrows.reverse()
   })
 
   useEffect(() => {
@@ -92,10 +139,10 @@ function App() {
 
   async function newContract() {
     const beneficiary = document.getElementById('beneficiary').value;
-    const arbiter = document.getElementById('arbiter').value;
+    const quorum = document.getElementById('quorum').value;
     const amount = document.getElementById('amount').value;
     const value = ethers.utils.parseEther(amount)
-    const makeEscrowTx = await factoryContract.makeEscrow(arbiter, beneficiary, { value })
+    const makeEscrowTx = await factoryContract.makeEscrow(quorum, beneficiary, { value })
     const makeEscrowReceipt = await makeEscrowTx.wait();
 
     const event = makeEscrowReceipt.events.find(event => event.event === 'Made')
@@ -112,7 +159,7 @@ function App() {
   }
   const handleClickDeployFactory = async (ev) => {
     try {
-      const factory = await deployFactory(signer);
+      const factory = await deployFactoryContract(signer);
       localStorage.setItem('factoryContractAddress', factory.address)
       setFactoryContractAddress(factory.address)
     } catch (error) {
@@ -135,24 +182,30 @@ function App() {
   return (
     <div className="pageContainer">
       <div>
-        <button onClick={handleClickClearFactory}>Clear Factory Contract</button>
+        Account: {account}
+      </div>
+      <div>
+        Factory Contract: {factoryContract.address}
+      </div>
+      <div>
+        <button onClick={handleClickClearFactory}>Exit Factory Contract </button>
       </div>
       <section>
         <form onSubmit={handleSubmit}>
           <h1> New Contract </h1>
           <label>
-            Arbiter Address
-            <input type="text" id="arbiter" />
+            Beneficiary Address
+            <input type="text" id="beneficiary" defaultValue="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" />
           </label>
 
           <label>
-            Beneficiary Address
-            <input type="text" id="beneficiary" />
+            Quorum
+            <input type="number" id="quorum" defaultValue={1} min={1} max={6} />
           </label>
 
           <label>
             Deposit Amount
-            <input type="text" id="amount" />
+            <input type="number" id="amount" defaultValue={1} min={0.000000000000000001} />
           </label>
 
           <button>
