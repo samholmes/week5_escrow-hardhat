@@ -195,7 +195,7 @@ function App() {
           <h1> New Contract </h1>
           <label>
             Beneficiary Address
-            <input type="text" id="beneficiary" defaultValue="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" />
+            <input type="text" id="beneficiary" />
           </label>
 
           <label>
