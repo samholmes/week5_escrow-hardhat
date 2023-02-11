@@ -7,6 +7,7 @@ import { useHandler } from './hooks/useHandler';
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 function App() {
+  const [faucetAmount, setFaucetAmount] = useState(0)
   const [account, setAccount] = useState();
   const [contractCount, setContractCount] = useState(0);
   const [escrows, setEscrows] = useState([]);
@@ -36,6 +37,9 @@ function App() {
     const effect = async () => {
       const count = await factoryContract.count()
       setContractCount(count.toNumber())
+      const faucetBalance = await provider.getBalance(factoryContract.address);
+      const faucetAmount = parseInt(ethers.utils.formatUnits(faucetBalance.div(10), 'ether'))
+      setFaucetAmount(faucetAmount);
     }
     effect()
   }, [factoryContract])
@@ -166,6 +170,11 @@ function App() {
       console.error(error)
     }
   }
+  const handleClickFaucet = async (ev) => {
+    ev.preventDefault();
+    await factoryContract.connect(signer).faucet();
+    setFaucetAmount(0);
+  }
 
   const handleSubmit = (ev) => {
     ev.preventDefault();
@@ -188,6 +197,11 @@ function App() {
         Factory Contract: {factoryContract.address}
       </div>
       <div>
+        <button onClick={handleClickFaucet} disabled={faucetAmount === 0}>
+          {faucetAmount === 0 
+            ? 'Faucet is dry.'
+            : `Get ${faucetAmount} TETHT`
+          }</button>
         <button onClick={handleClickClearFactory}>Exit Factory Contract </button>
       </div>
       <section>
