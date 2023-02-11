@@ -6,12 +6,24 @@ import { useHandler } from './hooks/useHandler';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
+function getFactoryAddress () {
+  return localStorage.getItem('factoryContractAddress') ?? window.location.hash.replace('#', '')
+}
+function saveFactoryAddress (address) {
+  localStorage.setItem('factoryContractAddress', address)
+  window.location.hash = '#' + address
+}
+function clearFactoryAddress() {
+  localStorage.removeItem('factoryContractAddress')
+  window.location.hash = ''
+}
+
 function App() {
   const [faucetAmount, setFaucetAmount] = useState(0)
   const [account, setAccount] = useState();
   const [contractCount, setContractCount] = useState(0);
   const [escrows, setEscrows] = useState([]);
-  const [factoryContractAddress, setFactoryContractAddress] = useState(localStorage.getItem('factoryContractAddress'))
+  const [factoryContractAddress, setFactoryContractAddress] = useState(getFactoryAddress())
   const [signer, setSigner] = useState();
 
   const factoryContract = useMemo(() => {
@@ -161,13 +173,13 @@ function App() {
   }
 
   const handleClickClearFactory = async (ev) => {
-      localStorage.removeItem('factoryContractAddress')
+      clearFactoryAddress()
       setFactoryContractAddress(null)
   }
   const handleClickDeployFactory = async (ev) => {
     try {
       const factory = await deployFactoryContract(signer);
-      localStorage.setItem('factoryContractAddress', factory.address)
+      saveFactoryAddress(factory.address)
       setFactoryContractAddress(factory.address)
     } catch (error) {
       console.error(error)
