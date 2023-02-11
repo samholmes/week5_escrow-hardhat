@@ -11,14 +11,10 @@ export default function Escrow(props) {
     onApprove,
     onDisapprove,
     quorum,
+    requirement,
   } = escrow
   const isArbiter = arbiters.some(arb => arb.address.toLowerCase() === account.toLowerCase())
   const hasVoted = arbiters.some(arb => arb.address.toLowerCase() === account.toLowerCase() && arb.voted)
-
-  console.log({
-    isArbiter,
-    hasVoted
-  })
 
   const handleArbitrate = (e) => {
     e.preventDefault();
@@ -55,6 +51,10 @@ export default function Escrow(props) {
         <div className="field">
           <label> Funding </label>
           <span> {funding} </span>
+        </div>
+        <div className="field">
+          <label> Requirement </label>
+          <span> {requirement} </span>
         </div>
         {
         isSettled 

@@ -24,6 +24,7 @@ describe('Escrow', function () {
     contract = await Escrow.deploy(
       arbiterCount,
       beneficiary.getAddress(),
+      "",
       {
         value: deposit,
       }

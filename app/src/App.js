@@ -62,6 +62,7 @@ function App() {
     const depositor = await escrowContract.depositor()
     const isSettled = await escrowContract.isSettled()
     const funding = await escrowContract.funding()
+    const requirement = await escrowContract.requirement()
 
     escrowContract.on('Settled', () => {
       setEscrows(escrows => {
@@ -103,6 +104,7 @@ function App() {
       depositor,
       isSettled,
       funding: ethers.utils.formatUnits(funding, 'ether'),
+      requirement,
       quorum,
       onArbitrate: async () => {
         const approveTxn = await escrowContract.connect(signer).arbitrate();
@@ -146,7 +148,8 @@ function App() {
     const quorum = document.getElementById('quorum').value;
     const amount = document.getElementById('amount').value;
     const value = ethers.utils.parseEther(amount)
-    const makeEscrowTx = await factoryContract.makeEscrow(quorum, beneficiary, { value })
+    const requirement = document.getElementById('requirement').value;
+    const makeEscrowTx = await factoryContract.makeEscrow(quorum, beneficiary, requirement, { value })
     const makeEscrowReceipt = await makeEscrowTx.wait();
 
     const event = makeEscrowReceipt.events.find(event => event.event === 'Made')
@@ -183,6 +186,7 @@ function App() {
 
   if (factoryContract == null) return (
     <div className='pageContainer'>
+      <h1 className='title'>Samuel Says</h1>  
       <p>To begin, you must deploy a factory contract.</p>
       <button onClick={handleClickDeployFactory}>Deploy Factory Contract</button>
     </div>
@@ -190,6 +194,7 @@ function App() {
 
   return (
     <div className="pageContainer">
+      <h1 className='title'>Samuel Says</h1>  
       <div>
         Account: {account}
       </div>
@@ -209,7 +214,7 @@ function App() {
           <h1> New Contract </h1>
           <label>
             Beneficiary Address
-            <input type="text" id="beneficiary" />
+            <input type="text" id="beneficiary" placeholder="Enter address..." />
           </label>
 
           <label>
@@ -222,6 +227,11 @@ function App() {
             <input type="number" id="amount" defaultValue={1} min={0.000000000000000001} />
           </label>
 
+          <label>
+            Requirement
+            <input type="text" id="requirement" placeholder="What must be done?" />
+          </label>
+
           <button>
             Deploy
           </button>
@@ -231,7 +241,7 @@ function App() {
       <section>
         <h1> Existing Contracts </h1>
         <div id="container">
-          {escrows.length === 0 ? <p>No Escrow Contracts in Affect.</p> : null}
+          {escrows.length === 0 ? <p>No Escrow Contracts.</p> : null}
           {escrows.map((escrow) => {
             return <Escrow key={escrow.address} escrow={escrow} account={account} />;
           })}

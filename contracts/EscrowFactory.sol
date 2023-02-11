@@ -11,14 +11,15 @@ contract EscrowFactory {
 
     receive() external payable {}
 
-    function makeEscrow(uint256 _arbiterCount, address _beneficiary)
-        external
-        payable
-        returns (address)
-    {
+    function makeEscrow(
+        uint256 _arbiterCount,
+        address _beneficiary,
+        string memory _requirement
+    ) external payable returns (address) {
         Escrow escrow = new Escrow{value: address(this).balance}(
             _arbiterCount,
-            _beneficiary
+            _beneficiary,
+            _requirement
         );
         address newAddress_ = address(escrow);
         addresses.push(newAddress_);

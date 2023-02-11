@@ -17,6 +17,7 @@ contract Escrow {
     address public beneficiary;
     address public depositor;
     uint256 public funding;
+    string public requirement;
 
     bool public isSettled;
     uint256 yays;
@@ -25,11 +26,16 @@ contract Escrow {
     mapping(address => Arbiter) public arbiters;
     uint256 voteCount;
 
-    constructor(uint256 _quorum, address _beneficiary) payable {
+    constructor(
+        uint256 _quorum,
+        address _beneficiary,
+        string memory _requirement
+    ) payable {
         quorum = _quorum;
         beneficiary = _beneficiary;
         depositor = tx.origin;
         funding = msg.value;
+        requirement = _requirement;
     }
 
     event Settled(uint256 funds, address recipient);
